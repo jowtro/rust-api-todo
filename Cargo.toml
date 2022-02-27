@@ -1,0 +1,16 @@
+[package]
+name = "rust-api-todo"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket =  { version = "0.5.0-rc.1", features = ["json"] }
+dotenv = "0.15.0"
+time = "0.3"
+chrono = { version = "0.4", features = ["serde"] }
+postgres = { version = "0.19.2", features = ["with-time-0_3", "with-chrono-0_4"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.78"
+sqlx = { version = "0.5.11", features = [ "runtime-tokio-rustls" ,"postgres","chrono","json"] }
