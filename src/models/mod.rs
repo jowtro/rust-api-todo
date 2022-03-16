@@ -7,3 +7,9 @@ pub struct Todo {
     pub task: Option<String>,
     pub completed: Option<bool>,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct TodoCreate {
+    pub task: Option<String>,
+}
+

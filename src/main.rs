@@ -3,7 +3,7 @@ use rocket::http::{Header, Status};
 use rocket::response::content;
 use rocket::serde::json::Json;
 use rocket::{Request, Response, State};
-use rust_api_todo::models::Todo;
+use rust_api_todo::models::{Todo, TodoCreate};
 use rust_api_todo::services::TodoService;
 use rust_api_todo::util::Config;
 use sqlx::postgres::PgPoolOptions;
@@ -49,11 +49,8 @@ async fn index() -> content::Json<&'static str> {
     content::Json("{'result' : 'Todooo'}")
 }
 
-#[get("/todos/<todoid>")]
-async fn get_todos_id(
-    todoid: i32,
-    pool: &State<Pool<Postgres>>,
-) -> Result<Json<Todo>, Status> {
+#[get("/todo/<todoid>")]
+async fn get_todos_id(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Json<Todo>, Status> {
     let todo = TodoService::fetch_id(todoid, &pool).await;
     match todo {
         Ok(todo) => Ok(Json(todo)),
@@ -61,7 +58,7 @@ async fn get_todos_id(
     }
 }
 
-#[get("/todos")]
+#[get("/todo")]
 async fn get_todos(pool: &State<Pool<Postgres>>) -> Result<Json<Vec<Todo>>, Status> {
     let todos = TodoService::fetch_all(&pool).await;
     match todos {
@@ -69,6 +66,44 @@ async fn get_todos(pool: &State<Pool<Postgres>>) -> Result<Json<Vec<Todo>>, Stat
         _ => Err(Status::NotFound),
     }
 }
+
+#[post("/todo", data = "<todo_payload>")]
+async fn create_todo(
+    todo_payload: Json<TodoCreate>,
+    pool: &State<Pool<Postgres>>,
+) -> Result<Status, Status> {
+    // create Todo
+    let result = TodoService::create_todo(todo_payload.0, &pool).await;
+    match result {
+        Ok(_) => Ok(Status::Created),
+        Err(err) => {
+            // output to log or stdout
+            println!("{}",err);
+            // return to user
+            Err(Status::InternalServerError)
+        },
+    }
+}
+
+#[put("/todo", data = "<todo_payload>")]
+async fn update_todo(
+    todo_payload: Json<TodoCreate>,
+    pool: &State<Pool<Postgres>>,
+) -> Result<Status, Status> {
+    // create Todo
+    let result = TodoService::update_todo(todo_payload.0, &pool).await;
+    match result {
+        Ok(_) => Ok(Status::Created),
+        Err(err) => {
+            // output to log or stdout
+            println!("{}",err);
+            // return to user
+            Err(Status::InternalServerError)
+        },
+    }
+}
+
+// TODO PUT DELETE
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -83,7 +118,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::default();
     rocket::build()
         .attach(CORS)
-        .mount(config.base, routes![index, get_todos, get_todos_id])
+        .mount(
+            config.base,
+            routes![index, get_todos, get_todos_id, create_todo],
+        )
         .manage(pool)
         .launch()
         .await
