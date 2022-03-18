@@ -46,10 +46,10 @@ impl Fairing for CORS {
 
 #[get("/")]
 async fn index() -> content::Json<&'static str> {
-    content::Json("{'result' : 'Todooo'}")
+    content::Json("{'result' : 'Test'}")
 }
 
-#[get("/todo/<todoid>")]
+#[get("/todos/<todoid>")]
 async fn get_todos_id(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Json<Todo>, Status> {
     let todo = TodoService::fetch_id(todoid, &pool).await;
     match todo {
@@ -58,7 +58,7 @@ async fn get_todos_id(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Json<
     }
 }
 
-#[get("/todo")]
+#[get("/todos")]
 async fn get_todos(pool: &State<Pool<Postgres>>) -> Result<Json<Vec<Todo>>, Status> {
     let todos = TodoService::fetch_all(&pool).await;
     match todos {
@@ -67,7 +67,7 @@ async fn get_todos(pool: &State<Pool<Postgres>>) -> Result<Json<Vec<Todo>>, Stat
     }
 }
 
-#[post("/todo", data = "<todo_payload>")]
+#[post("/todos", data = "<todo_payload>")]
 async fn create_todo(
     todo_payload: Json<TodoCreate>,
     pool: &State<Pool<Postgres>>,
@@ -78,32 +78,51 @@ async fn create_todo(
         Ok(_) => Ok(Status::Created),
         Err(err) => {
             // output to log or stdout
-            println!("{}",err);
+            println!("{}", err);
             // return to user
             Err(Status::InternalServerError)
-        },
+        }
     }
 }
 
-#[put("/todo", data = "<todo_payload>")]
+#[put("/todos", data = "<todo_payload>")]
 async fn update_todo(
-    todo_payload: Json<TodoCreate>,
+    todo_payload: Json<Todo>,
     pool: &State<Pool<Postgres>>,
 ) -> Result<Status, Status> {
-    // create Todo
     let result = TodoService::update_todo(todo_payload.0, &pool).await;
     match result {
-        Ok(_) => Ok(Status::Created),
+        Ok(_) => Ok(Status::Ok),
         Err(err) => {
             // output to log or stdout
-            println!("{}",err);
+            println!("{}", err);
             // return to user
             Err(Status::InternalServerError)
-        },
+        }
     }
 }
 
-// TODO PUT DELETE
+#[delete("/todos/<todoid>")]
+async fn delete_todo(
+    todoid: i32,
+    pool: &State<Pool<Postgres>>,
+) -> Result<Status, Status> {
+    let result = TodoService::delete_todo(todoid, &pool).await;
+    match result {
+        Ok(_) => Ok(Status::NoContent),
+        Err(err) => {
+            // output to log or stdout
+            println!("{}", err);
+            // return to user
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
+
+
+
+// TODO DELETE
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -120,7 +139,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .attach(CORS)
         .mount(
             config.base,
-            routes![index, get_todos, get_todos_id, create_todo],
+            routes![index, get_todos, get_todos_id, create_todo, update_todo, delete_todo],
         )
         .manage(pool)
         .launch()

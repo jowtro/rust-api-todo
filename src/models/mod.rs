@@ -12,4 +12,3 @@ pub struct Todo {
 pub struct TodoCreate {
     pub task: Option<String>,
 }
-

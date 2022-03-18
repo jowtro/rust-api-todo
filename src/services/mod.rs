@@ -1,5 +1,3 @@
-use postgres::GenericClient;
-use rocket::http::Status;
 use sqlx::{Pool, Postgres};
 
 use crate::models::{Todo, TodoCreate};
@@ -22,16 +20,34 @@ impl TodoService {
             .bind(todo.task)
             .execute(&*pool)
             .await?;
-            Ok(())
-    }
-    // TODO update
-    pub async fn update_todo(todo: TodoCreate, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
-        sqlx::query("update set into todos (task) values ($1) ")
-            .bind(todo.task)
-            .execute(&*pool)
-            .await?;
-            Ok(())
+        Ok(())
     }
 
-    // TODO delete
+    pub async fn update_todo(todo: Todo, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            r#"
+            UPDATE public.todos
+            SET task=$1, completed=$2
+            WHERE id=$3;
+            "#,
+            todo.task,
+            todo.completed,
+            todo.id
+        )
+        .execute(&*pool)
+        .await?;
+        Ok(())
+    }
+
+    pub async fn delete_todo(todo_id: i32, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            r#"
+            DELETE from public.todos WHERE id=$1;
+            "#,
+            todo_id
+        )
+        .execute(&*pool)
+        .await?;
+        Ok(())
+    }
 }
