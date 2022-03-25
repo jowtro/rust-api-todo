@@ -6,6 +6,7 @@ use rocket::{Request, Response, State};
 use rust_api_todo::models::{Todo, TodoCreate};
 use rust_api_todo::services::TodoService;
 use rust_api_todo::util::Config;
+use serde_json::Value;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 use std::{env, fmt};
@@ -119,10 +120,13 @@ async fn delete_todo(
     }
 }
 
-
-
-
-// TODO DELETE
+#[post("/json", format = "json", data = "<msg>")]
+fn echo(msg: Json<Value>) -> Json<Value> {
+    println!("-----------------------------------------");
+    println!("{}", msg.to_string());
+    println!("-----------------------------------------");
+    msg
+}
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -139,7 +143,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .attach(CORS)
         .mount(
             config.base,
-            routes![index, get_todos, get_todos_id, create_todo, update_todo, delete_todo],
+            routes![
+                index,
+                get_todos,
+                get_todos_id,
+                create_todo,
+                update_todo,
+                delete_todo,
+                echo
+            ],
         )
         .manage(pool)
         .launch()
