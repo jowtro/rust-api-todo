@@ -87,7 +87,7 @@ async fn create_todo(
     }
 }
 
-#[put("/todos", data = "<todo_payload>")]
+#[put("/todos", format = "json", data = "<todo_payload>")]
 async fn update_todo(
     todo_payload: Json<Todo>,
     pool: &State<Pool<Postgres>>,
@@ -105,10 +105,7 @@ async fn update_todo(
 }
 
 #[delete("/todos/<todoid>")]
-async fn delete_todo(
-    todoid: i32,
-    pool: &State<Pool<Postgres>>,
-) -> Result<Status, Status> {
+async fn delete_todo(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Status, Status> {
     let result = TodoService::delete_todo(todoid, &pool).await;
     match result {
         Ok(_) => Ok(Status::NoContent),
@@ -129,6 +126,10 @@ fn echo(msg: Json<Value>) -> Json<Value> {
     msg
 }
 
+#[options("/todos")]
+fn optionsx() -> Status {
+    Status::Ok
+}
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
@@ -151,7 +152,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 create_todo,
                 update_todo,
                 delete_todo,
-                echo
+                echo,
+                optionsx
             ],
         )
         .manage(pool)
