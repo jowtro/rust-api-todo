@@ -2,7 +2,7 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::response::content;
 use rocket::serde::json::Json;
-use rocket::{Request, Response, State};
+use rocket::{routes, Request, Response, State};
 use rust_api_todo::models::{Todo, TodoCreate};
 use rust_api_todo::services::TodoService;
 use rust_api_todo::util::Config;
@@ -38,10 +38,11 @@ impl Fairing for CORS {
         response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
         response.set_header(Header::new(
             "Access-Control-Allow-Methods",
-            "POST, GET, PATCH, OPTIONS",
+            "POST, GET, PATCH, PUT, DELETE, OPTIONS",
         ));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+        // response.set_header(Header::new("Access-Control-Expose-Headers", "true"));
     }
 }
 
