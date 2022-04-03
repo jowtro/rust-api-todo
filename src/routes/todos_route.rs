@@ -1,0 +1,76 @@
+
+use rocket::http::{Status};
+use rocket::serde::json::Json;
+use rocket::{State};
+use rocket::{get, delete, put, post};
+use crate::classes::todo_model::model::{Todo, TodoCreate};
+use crate::services::todo::TodoService;
+use sqlx::{Pool, Postgres};
+
+
+#[get("/todos/<todoid>")]
+pub async fn get_todos_id(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Json<Todo>, Status> {
+    let todo = TodoService::fetch_todo_id(todoid, &pool).await;
+    match todo {
+        Ok(todo) => Ok(Json(todo)),
+        _ => Err(Status::NotFound),
+    }
+}
+
+#[get("/todos")]
+pub async fn get_todos(pool: &State<Pool<Postgres>>) -> Result<Json<Vec<Todo>>, Status> {
+    let todos = TodoService::fetch_all(&pool).await;
+    match todos {
+        Ok(todos) => Ok(Json(todos)),
+        _ => Err(Status::NotFound),
+    }
+}
+
+#[post("/todos", data = "<todo_payload>")]
+pub async fn create_todo(
+    todo_payload: Json<TodoCreate>,
+    pool: &State<Pool<Postgres>>,
+) -> Result<Status, Status> {
+    // create Todo
+    let result = TodoService::create_todo(todo_payload.0, &pool).await;
+    match result {
+        Ok(_) => Ok(Status::Created),
+        Err(err) => {
+            // output to log or stdout
+            println!("{}", err);
+            // return to user
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
+#[put("/todos", format = "json", data = "<todo_payload>")]
+pub async fn update_todo(
+    todo_payload: Json<Todo>,
+    pool: &State<Pool<Postgres>>,
+) -> Result<Status, Status> {
+    let result = TodoService::update_todo(todo_payload.0, &pool).await;
+    match result {
+        Ok(_) => Ok(Status::Ok),
+        Err(err) => {
+            // output to log or stdout
+            println!("{}", err);
+            // return to user
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
+#[delete("/todos/<todoid>")]
+pub async fn delete_todo(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Status, Status> {
+    let result = TodoService::delete_todo(todoid, &pool).await;
+    match result {
+        Ok(_) => Ok(Status::NoContent),
+        Err(err) => {
+            // output to log or stdout
+            println!("{}", err);
+            // return to user
+            Err(Status::InternalServerError)
+        }
+    }
+}

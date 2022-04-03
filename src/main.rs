@@ -2,13 +2,12 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
 use rocket::response::content;
 use rocket::serde::json::Json;
-use rocket::{routes, Request, Response, State};
-use rust_api_todo::models::{Todo, TodoCreate};
-use rust_api_todo::services::TodoService;
+use rocket::{routes, Request, Response};
+use rust_api_todo::routes::categories_route::*;
+use rust_api_todo::routes::todos_route::*;
 use rust_api_todo::util::Config;
 use serde_json::Value;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{Pool, Postgres};
 use std::{env, fmt};
 
 #[macro_use]
@@ -51,73 +50,6 @@ async fn index() -> content::Json<&'static str> {
     content::Json("{'result' : 'Test'}")
 }
 
-#[get("/todos/<todoid>")]
-async fn get_todos_id(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Json<Todo>, Status> {
-    let todo = TodoService::fetch_id(todoid, &pool).await;
-    match todo {
-        Ok(todo) => Ok(Json(todo)),
-        _ => Err(Status::NotFound),
-    }
-}
-
-#[get("/todos")]
-async fn get_todos(pool: &State<Pool<Postgres>>) -> Result<Json<Vec<Todo>>, Status> {
-    let todos = TodoService::fetch_all(&pool).await;
-    match todos {
-        Ok(todos) => Ok(Json(todos)),
-        _ => Err(Status::NotFound),
-    }
-}
-
-#[post("/todos", data = "<todo_payload>")]
-async fn create_todo(
-    todo_payload: Json<TodoCreate>,
-    pool: &State<Pool<Postgres>>,
-) -> Result<Status, Status> {
-    // create Todo
-    let result = TodoService::create_todo(todo_payload.0, &pool).await;
-    match result {
-        Ok(_) => Ok(Status::Created),
-        Err(err) => {
-            // output to log or stdout
-            println!("{}", err);
-            // return to user
-            Err(Status::InternalServerError)
-        }
-    }
-}
-
-#[put("/todos", format = "json", data = "<todo_payload>")]
-async fn update_todo(
-    todo_payload: Json<Todo>,
-    pool: &State<Pool<Postgres>>,
-) -> Result<Status, Status> {
-    let result = TodoService::update_todo(todo_payload.0, &pool).await;
-    match result {
-        Ok(_) => Ok(Status::Ok),
-        Err(err) => {
-            // output to log or stdout
-            println!("{}", err);
-            // return to user
-            Err(Status::InternalServerError)
-        }
-    }
-}
-
-#[delete("/todos/<todoid>")]
-async fn delete_todo(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Status, Status> {
-    let result = TodoService::delete_todo(todoid, &pool).await;
-    match result {
-        Ok(_) => Ok(Status::NoContent),
-        Err(err) => {
-            // output to log or stdout
-            println!("{}", err);
-            // return to user
-            Err(Status::InternalServerError)
-        }
-    }
-}
-
 #[post("/json", format = "json", data = "<msg>")]
 fn echo(msg: Json<Value>) -> Json<Value> {
     println!("-----------------------------------------");
@@ -152,6 +84,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 create_todo,
                 update_todo,
                 delete_todo,
+                get_categories,
+                get_category_id,
+                create_category,
+                update_category,
+                delete_category,
                 echo,
                 optionsx
             ],
