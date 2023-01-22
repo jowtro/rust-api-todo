@@ -1,6 +1,10 @@
 # rust-api-todo
 Testing rocket crate and SQLx
 
+## Note
+DBMS: POSTGRESQL
+DB:testbox->Schema->todoapp->table->todos
+
 #TODOS Table
 
 ```SQL
