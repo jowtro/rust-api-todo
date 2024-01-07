@@ -5,13 +5,26 @@ Testing rocket crate and SQLx
 DBMS: POSTGRESQL
 DB:testbox->Schema->todoapp->table->todos
 
-#TODOS Table
+## .env
+```bash
+DATABASE_URL=postgres://youruser:passwd@localhost:5432/testbox
+```
+
 
 ```SQL
+CREATE DATABASE testbox;
+
+-- DROP SCHEMA todoapp;
+
+CREATE SCHEMA todoapp AUTHORIZATION postgres;
+
+
+-- Permissions
+
+GRANT ALL ON SCHEMA todoapp TO postgres;
+
 -- todoapp.todos definition
-
 -- Drop table
-
 -- DROP TABLE todoapp.todos;
 
 CREATE TABLE todoapp.todos (
@@ -20,6 +33,14 @@ CREATE TABLE todoapp.todos (
 	completed bool NULL DEFAULT false,
 	category_id int4 NULL,
 	CONSTRAINT pk_todos PRIMARY KEY (todo_id)
+);
+
+-- DROP TABLE IF EXISTS todoapp.categories;
+
+CREATE TABLE todoapp.categories (
+    category_id serial4 NOT NULL,
+    name varchar(50) NOT NULL,
+    CONSTRAINT pk_categories PRIMARY KEY (category_id)
 );
 
 
