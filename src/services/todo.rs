@@ -20,14 +20,18 @@ impl TodoService {
         Ok(todos)
     }
     pub async fn create_todo(todo: TodoCreate, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
-        sqlx::query("insert into todos (task) values ($1) ")
+        sqlx::query("insert into todoapp.todos (task) values ($1) ")
             .bind(todo.task)
             .execute(&*pool)
             .await?;
         Ok(())
     }
 
-    pub async fn update_todo(todo: Todo, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
+    pub async fn update_todo(
+        todo_id: i32,
+        todo: Todo,
+        pool: &Pool<Postgres>,
+    ) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r#"
             UPDATE todoapp.todos
@@ -36,19 +40,19 @@ impl TodoService {
             "#,
             todo.task,
             todo.completed,
-            todo.todo_id
+            todo_id
         )
         .execute(&*pool)
         .await?;
         Ok(())
     }
 
-    pub async fn delete_todo(todo_todo_id: i32, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
+    pub async fn delete_todo(todo_id: i32, pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r#"
             DELETE from todoapp.todos WHERE todo_id=$1;
             "#,
-            todo_todo_id
+            todo_id
         )
         .execute(&*pool)
         .await?;

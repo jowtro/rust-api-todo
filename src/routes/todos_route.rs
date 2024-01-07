@@ -1,16 +1,16 @@
 
-use rocket::http::{Status};
+use rocket::http::Status;
 use rocket::serde::json::Json;
-use rocket::{State};
+use rocket::State;
 use rocket::{get, delete, put, post};
 use crate::classes::todo_model::model::{Todo, TodoCreate};
 use crate::services::todo::TodoService;
 use sqlx::{Pool, Postgres};
 
 
-#[get("/todos/<todoid>")]
-pub async fn get_todos_id(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Json<Todo>, Status> {
-    let todo = TodoService::fetch_todo_id(todoid, &pool).await;
+#[get("/todos/<todo_id>")]
+pub async fn get_todos_id(todo_id: i32, pool: &State<Pool<Postgres>>) -> Result<Json<Todo>, Status> {
+    let todo = TodoService::fetch_todo_id(todo_id, &pool).await;
     match todo {
         Ok(todo) => Ok(Json(todo)),
         _ => Err(Status::NotFound),
@@ -44,12 +44,13 @@ pub async fn create_todo(
     }
 }
 
-#[put("/todos", format = "json", data = "<todo_payload>")]
+#[put("/todos/<todo_id>", format = "json", data = "<todo_payload>")]
 pub async fn update_todo(
+    todo_id : i32,
     todo_payload: Json<Todo>,
     pool: &State<Pool<Postgres>>,
 ) -> Result<Status, Status> {
-    let result = TodoService::update_todo(todo_payload.0, &pool).await;
+    let result = TodoService::update_todo(todo_id, todo_payload.0, &pool).await;
     match result {
         Ok(_) => Ok(Status::Ok),
         Err(err) => {
@@ -61,9 +62,9 @@ pub async fn update_todo(
     }
 }
 
-#[delete("/todos/<todoid>")]
-pub async fn delete_todo(todoid: i32, pool: &State<Pool<Postgres>>) -> Result<Status, Status> {
-    let result = TodoService::delete_todo(todoid, &pool).await;
+#[delete("/todos/<todo_id>")]
+pub async fn delete_todo(todo_id: i32, pool: &State<Pool<Postgres>>) -> Result<Status, Status> {
+    let result = TodoService::delete_todo(todo_id, &pool).await;
     match result {
         Ok(_) => Ok(Status::NoContent),
         Err(err) => {

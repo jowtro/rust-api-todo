@@ -1,12 +1,10 @@
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, Status};
-use rocket::response::content;
 use rocket::serde::json::Json;
 use rocket::{routes, Request, Response};
 use rust_api_todo::routes::categories_route::*;
 use rust_api_todo::routes::todos_route::*;
 use rust_api_todo::util::Config;
-use serde_json::Value;
 use sqlx::postgres::PgPoolOptions;
 use std::{env, fmt};
 
@@ -46,12 +44,12 @@ impl Fairing for CORS {
 }
 
 #[get("/")]
-async fn index() -> content::Json<&'static str> {
-    content::Json("{'result' : 'Test'}")
+async fn index() -> Json<&'static str> {
+    Json("{\"result\" : \"Hello!\"}")
 }
 
 #[post("/json", format = "json", data = "<msg>")]
-fn echo(msg: Json<Value>) -> Json<Value> {
+fn echo(msg: Json<serde_json::Value>) -> Json<serde_json::Value> {
     println!("-----------------------------------------");
     println!("{}", msg.to_string());
     println!("-----------------------------------------");

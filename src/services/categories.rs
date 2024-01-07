@@ -33,6 +33,7 @@ impl CategorieService {
     }
 
     pub async fn update_category(
+        category_id: i32,
         category: Category,
         pool: &Pool<Postgres>,
     ) -> Result<(), sqlx::Error> {
@@ -43,7 +44,7 @@ impl CategorieService {
             WHERE category_id=$2;
             "#,
             category.name,
-            category.category_id
+            category_id
         )
         .execute(&*pool)
         .await?;

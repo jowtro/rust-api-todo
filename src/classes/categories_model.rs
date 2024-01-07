@@ -3,7 +3,7 @@ pub mod model {
     use serde::Serialize;
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct Category {
-        pub category_id: i32,
+        pub category_id: Option<i32>,
         pub name: String,
     }
 

@@ -3,7 +3,7 @@ pub mod model {
     use serde::Serialize;
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct Todo {
-        pub todo_id: i32,
+        pub todo_id: Option<i32>,
         pub task: Option<String>,
         pub completed: Option<bool>,
         pub category_id: Option<i32>,
