@@ -4,6 +4,7 @@ use rocket::serde::json::Json;
 use rocket::{routes, Request, Response};
 use rust_api_todo::routes::categories_route::*;
 use rust_api_todo::routes::todos_route::*;
+use rust_api_todo::routes::user_route::*;
 use rust_api_todo::util::Config;
 use sqlx::postgres::PgPoolOptions;
 use std::{env, fmt};
@@ -60,6 +61,8 @@ fn echo(msg: Json<serde_json::Value>) -> Json<serde_json::Value> {
 fn optionsx() -> Status {
     Status::Ok
 }
+
+
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
@@ -77,6 +80,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             config.base,
             routes![
                 index,
+                login,
+                register,
                 get_todos,
                 get_todos_id,
                 create_todo,
