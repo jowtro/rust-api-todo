@@ -1,23 +1,14 @@
+use crate::classes::user_model::model::UserCreate;
+use crate::errors::errors::MyError;
+use crate::services::user::UserService;
+
 use rocket::http::Status;
 use rocket::post;
 use rocket::serde::json::Json;
 use rocket::State;
-use std::fmt;
 
-use crate::classes::user_model::model::UserCreate;
-use crate::services::user::UserService;
-
+use serde::ser::Error;
 use sqlx::{Pool, Postgres};
-
-#[derive(Debug)]
-struct MyError(String);
-
-impl fmt::Display for MyError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "There is an error: {}", self.0)
-    }
-}
-
 #[post("/login", format = "json", data = "<credentials>")]
 pub async fn login(
     credentials: Json<serde_json::Value>,
@@ -26,23 +17,28 @@ pub async fn login(
     let password = credentials["password"].as_str().unwrap();
 
     // Add the return
-    Ok(Json(serde_json::json!({
-
-        "username": username,
-        "password": password
-    })))
+    if username == "admin" && password == "password" {
+        Ok(Json(serde_json::json!({
+            "msg": "Login successful"
+        })))
+    } else {
+        Err(Status::Unauthorized)
+    }
 }
 
 #[post("/register", format = "json", data = "<credentials>")]
 pub async fn register(
     pool: &State<Pool<Postgres>>,
     credentials: Json<serde_json::Value>,
-) -> Result<Status, Status> {
+) -> Result<Status, MyError> {
     let username = credentials["username"].as_str().unwrap();
     let password = credentials["password"].as_str().unwrap();
 
     if username.is_empty() || password.is_empty() {
-        return Err(Status::BadRequest);
+        return Err(MyError::BadRequest {
+            msg: "Username or password is empty".to_string(),
+            source: std::fmt::Error,
+        });
     }
 
     let new_user = UserCreate {
@@ -58,7 +54,9 @@ pub async fn register(
             // output to log or stdout
             println!("{}", err);
             // return to user
-            Err(Status::InternalServerError)
+            Err(MyError::SerdeJson {
+                source: serde_json::Error::custom(err.to_string())
+            })
         }
     }
 }
