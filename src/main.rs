@@ -6,6 +6,7 @@ use rust_api_todo::routes::categories_route::*;
 use rust_api_todo::routes::todos_route::*;
 use rust_api_todo::routes::user_route::*;
 use rust_api_todo::util::Config;
+use rust_api_todo::appstate::appstate::AppState;
 use sqlx::postgres::PgPoolOptions;
 use std::{env, fmt};
 
@@ -67,6 +68,7 @@ fn optionsx() -> Status {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     let database_url = env::var("DATABASE_URL")?;
+    let appstate = AppState::default();
     // create a pgsql pool
     let pool = PgPoolOptions::new()
         .max_connections(5)
@@ -75,12 +77,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let config = Config::default();
     rocket::build()
+        .manage(appstate)
         .attach(CORS)
         .mount(
             config.base,
             routes![
                 index,
-                login,
+                token,
                 register,
                 get_todos,
                 get_todos_id,

@@ -4,9 +4,9 @@ pub mod model {
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct User {
-        pub user_id: Option<i32>,
+        pub user_id: i32,
         pub username: Option<String>,
-        pub password: Option<String>,
+        pub password_hash: Option<String>,
     }
 
     #[derive(Serialize, Deserialize, Clone, Debug)]

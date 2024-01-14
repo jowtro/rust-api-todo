@@ -25,6 +25,12 @@ pub mod errors {
             #[source]
             source: Error,
         },
+        #[error("Unauthorized {source:?}")]
+        Unauthorized {
+            msg: String,
+            #[source]
+            source: Error,
+        },
     }
 
     impl<'r, 'o: 'r> response::Responder<'r, 'o> for MyError {
