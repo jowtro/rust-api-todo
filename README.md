@@ -1,3 +1,5 @@
+# Wip - Adding token authentication
+
 # rust-api-todo
 Testing rocket crate and SQLx
 
