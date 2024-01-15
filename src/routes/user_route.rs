@@ -1,5 +1,4 @@
 use crate::appstate::appstate::AppState;
-use crate::classes::user_model::model::User;
 use crate::errors::errors::MyError;
 use crate::services::user::UserService;
 use crate::{classes::user_model::model::UserCreate, util::verify_hash};

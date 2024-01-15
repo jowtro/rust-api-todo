@@ -1,16 +1,10 @@
+use crate::classes::token_model::model::Claims;
 use crate::classes::user_model::model::{User, UserCreate};
 use crate::util::generate_hash;
 use jsonwebtoken::{EncodingKey, Header};
-use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    iat: usize,
-    exp: i64,
-}
 
 pub struct UserService {}
 

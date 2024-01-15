@@ -2,11 +2,12 @@
 use rocket::http::Status;
 use rocket::serde::json::Json;
 use rocket::State;
+
 use rocket::{get, delete, put, post};
 use crate::classes::todo_model::model::{Todo, TodoCreate};
 use crate::services::todo::TodoService;
+use crate::classes::token_model::model::Claims;
 use sqlx::{Pool, Postgres};
-
 
 #[get("/todos/<todo_id>")]
 pub async fn get_todos_id(todo_id: i32, pool: &State<Pool<Postgres>>) -> Result<Json<Todo>, Status> {
@@ -18,7 +19,14 @@ pub async fn get_todos_id(todo_id: i32, pool: &State<Pool<Postgres>>) -> Result<
 }
 
 #[get("/todos")]
-pub async fn get_todos(pool: &State<Pool<Postgres>>) -> Result<Json<Vec<Todo>>, Status> {
+pub async fn get_todos(pool: &State<Pool<Postgres>>, token: Claims) -> Result<Json<Vec<Todo>>, Status> {
+    // check if token exists
+    if token.sub.is_empty() {
+        return Err(Status::Unauthorized);
+    }
+    if token.sub != "5" {
+        return Err(Status::Unauthorized);
+    }
     let todos = TodoService::fetch_all(&pool).await;
     match todos {
         Ok(todos) => Ok(Json(todos)),
